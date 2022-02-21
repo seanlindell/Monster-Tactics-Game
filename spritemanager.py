@@ -30,8 +30,8 @@ def load_images(fileName):
 # animCycle is how many game-frames each animation-frame should show before changing to the next game. The game runs at
 #       30 game-frames per second, so keep that in mind when deciding how long each frame should last. It is 15 by default
 # If you want the animation to pause, switch the animActive field
-# If you want the animation to skip to a specific frame, use switchToFrame()
-# CORE USEAGE: call mySprite.update() each game-frame, and when blitting to screen, use mySprite.getImage() to get the appopriate frame to draw
+# If you want the animation to skip to a specific frame, use switch_to_frame()
+# CORE USEAGE: call mySprite.update() each game-frame, and when blitting to screen, use mySprite.get_image() to get the appopriate frame to draw
 class GenericAnimatedSprite(pygame.sprite.Sprite):
 
     animCycle = 15
@@ -57,14 +57,14 @@ class GenericAnimatedSprite(pygame.sprite.Sprite):
                 if(self.currentSpriteFrame == len(self.images)):
                     self.currentSpriteFrame = 0
     
-    def switchToFrame(self, frame):
+    def switch_to_frame(self, frame):
         if(frame<len(self.images) and frame > -1):
             self.currentSpriteFrame = frame
             self.gameFrameCounter = 0
         else:
             print("Frame out of bounds")
 
-    def getImage(self):
+    def get_image(self):
         return self.images[self.currentSpriteFrame]
 
 
@@ -80,7 +80,7 @@ class GenericStaticSprite(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
 
-    def getImage(self):
+    def get_image(self):
         return self.images[0]
 
 

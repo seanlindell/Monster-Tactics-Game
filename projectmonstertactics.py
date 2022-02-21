@@ -50,9 +50,9 @@ def main():
             for y in range(10):
                 screen.blit(purpleTile, (100+x*64,100+y*64))
 
-        screen.blit(myVamp.getImage(), (100+1*64,100+1*64))
-        screen.blit(myWere.getImage(), (100+2*64,100+2*64))
-        screen.blit(cursor.getImage(), (100+cursorXPos*64,100+cursorYPos*64))
+        screen.blit(myVamp.get_image(), (100+1*64,100+1*64))
+        screen.blit(myWere.get_image(), (100+2*64,100+2*64))
+        screen.blit(cursor.get_image(), (100+cursorXPos*64,100+cursorYPos*64))
 
         pygame.display.flip()
         clock.tick(30)

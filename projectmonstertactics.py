@@ -8,8 +8,6 @@ def main():
     cursorMovementBuffer = 0
 
     clock = pygame.time.Clock()
-
-    # create a surface on screen that has the size of 240 x 180
     screen = pygame.display.set_mode((1280,800))
 
     # initialize the pygame module

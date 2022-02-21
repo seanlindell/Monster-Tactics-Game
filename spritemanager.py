@@ -119,3 +119,9 @@ class Werewolf(PlayerUnitSprite):
     def __init__(self):
         PlayerUnitSprite.__init__(self,5,8,2)
         self.images = load_images("werewolf")
+
+class Mummy(PlayerUnitSprite):
+    
+    def __init__(self):
+        super().__init__(10, 2, 3)
+        self.images = load_images("mummy")

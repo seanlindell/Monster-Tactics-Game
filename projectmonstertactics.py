@@ -33,6 +33,7 @@ def main():
     cursor = sm.Cursor()
     myVamp = sm.Vampire()
     myWere = sm.Werewolf()
+    myMumm = sm.Mummy()
 
     # define a variable to control the main loop
     running = True
@@ -45,6 +46,7 @@ def main():
         cursor.update()
         myVamp.update()
         myWere.update()
+        myMumm.update()
 
         for x in range(10):
             for y in range(10):
@@ -52,6 +54,7 @@ def main():
 
         screen.blit(myVamp.get_image(), (100+1*64,100+1*64))
         screen.blit(myWere.get_image(), (100+2*64,100+2*64))
+        screen.blit(myMumm.get_image(), (100+3*64,100+3*64))
         screen.blit(cursor.get_image(), (100+cursorXPos*64,100+cursorYPos*64))
 
         pygame.display.flip()

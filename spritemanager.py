@@ -141,7 +141,7 @@ class dropDownMenu(GenericAnimatedSprite):
     def get_image(self, menuOptions: list):
         if len(menuOptions)>4:
             print("We don't support more than 4 menu options right now, more sprites would need to be made")
-        menuSurface = self.images[len(menuOptions)-1]
+        menuSurface = self.images[len(menuOptions)-1].copy()
         i = 0
         for text in menuOptions:
             menuSurface.blit(getTextSurface(text, 45), (5, 16+82*i))

@@ -67,7 +67,7 @@ def createUnitAt(x, y, unit: sm.UnitSprite, isPlayerUnit):
         enemyUnits.append(unit)
     gameBoard[xytoz(x,y)] = unit
 
-def removeUnit(unit: sm.UnitSprite, isplayerUnit):
+def removeUnitFromUnitLists(unit: sm.UnitSprite, isplayerUnit):
     if isplayerUnit:
         playerUnits.remove(unit)
     else:
@@ -137,6 +137,13 @@ def main():
         elif y<11 and yMod==1 and getUnitAt(x,y+1) != None and not getUnitAt(x,y+1).isAlly:
             return True
         return False
+
+    def attackUnit(attackerX, attackerY, targetX, targetY):
+        attackPower = getUnitAt(attackerX, attackerY).ATK
+        getUnitAt(targetX, targetY).HP -= attackPower
+        if getUnitAt(targetX, targetY).HP <= 0:
+            removeUnitFromUnitLists(getUnitAt(targetX, targetY), False)
+            setUnitAt(targetX, targetY, None)
 
     clock = pygame.time.Clock()
     screen = pygame.display.set_mode((1280,815))
@@ -285,6 +292,7 @@ def main():
                         targetChoiceModifier = (0,-1)
                         selectBuffer = 10
             elif cursorMode == cm.TARGETCHOICE:
+                attackUnit(cursorXPos, cursorYPos, cursorXPos + targetChoiceModifier[0], cursorYPos + targetChoiceModifier[1])
                 cursorMode = cm.MAINBOARD
         elif (selectBuffer > 0):
             selectBuffer -= 1

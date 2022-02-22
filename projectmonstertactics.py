@@ -30,7 +30,7 @@ def main():
     selectedTileY = -1
 
     clock = pygame.time.Clock()
-    screen = pygame.display.set_mode((1280,800))
+    screen = pygame.display.set_mode((1280,815))
 
     # initialize the pygame module
     pygame.init()
@@ -47,6 +47,10 @@ def main():
     lblueTile = pygame.image.load("lblue_tile.png").convert_alpha()
     purpleTile = pygame.image.load("purple_tile.png").convert_alpha()
     whiteTile = pygame.image.load("white_tile.png").convert_alpha()
+
+    playerblockSprite = pygame.image.load("playerstatsblock.png").convert_alpha()
+    enemyblockSprite = pygame.image.load("enemystatsblock.png").convert_alpha()
+
     whiteTile = pygame.transform.scale(whiteTile, (64, 64))
     lblueTile = pygame.transform.scale(lblueTile, (64, 64))
     purpleTile = pygame.transform.scale(purpleTile, (64, 64))
@@ -81,6 +85,9 @@ def main():
                     unit.update()
                     screen.blit(getUnitAt(x,y).get_image(), (25+x*64,20+y*64))
 
+        screen.blit(playerblockSprite, (40+1024,20))
+        screen.blit(enemyblockSprite, (40+1024,33+377))
+
         screen.blit(cursor.get_image(), (25+cursorXPos*64,20+cursorYPos*64))        
 
         # event handling, gets all event from the event queue
@@ -94,23 +101,23 @@ def main():
         if not cursorMovementBuffer:
             if (keystate[pygame.K_UP] and cursorYPos > 0):
                 cursorYPos -= 1
-                cursorMovementBuffer = 2
-            elif (keystate[pygame.K_DOWN] and cursorYPos < 11):
+                cursorMovementBuffer = 3
+            if (keystate[pygame.K_DOWN] and cursorYPos < 11):
                 cursorYPos += 1
-                cursorMovementBuffer = 2
-            elif (keystate[pygame.K_RIGHT] and cursorXPos < 15):
+                cursorMovementBuffer = 3
+            if (keystate[pygame.K_RIGHT] and cursorXPos < 15):
                 cursorXPos += 1
-                cursorMovementBuffer = 2
-            elif (keystate[pygame.K_LEFT] and cursorXPos > 0):
+                cursorMovementBuffer = 3
+            if (keystate[pygame.K_LEFT] and cursorXPos > 0):
                 cursorXPos -= 1
-                cursorMovementBuffer = 2
+                cursorMovementBuffer = 3
         else:
             if cursorMovementBuffer > 0:
                 cursorMovementBuffer -= 1
 
         if (keystate[pygame.K_SPACE] and selectBuffer == 0):
             # THE BELOW CONDITIONAL WILL BE CHANGED TO CHECK IF UNIT BELONGS TO PLAYER AND IF UNIT HAS ALREADY MOVED
-            if(getUnitAt(selectedTileX, selectedTileY) != None and getUnitAt(cursorXPos, cursorYPos) == None):
+            if(getUnitAt(cursorXPos, cursorYPos) == None):
                 setUnitAt(cursorXPos,cursorYPos, getUnitAt(selectedTileX, selectedTileY))
                 setUnitAt(selectedTileX,selectedTileY, None)
                 selectedTileX = -1
@@ -121,7 +128,7 @@ def main():
             else:
                 selectedTileX = cursorXPos
                 selectedTileY = cursorYPos
-            selectBuffer = 3
+            selectBuffer = 5
         elif (selectBuffer > 0):
             selectBuffer -= 1
 

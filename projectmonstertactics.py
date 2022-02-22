@@ -5,6 +5,9 @@ import spritemanager as sm
 # Convert (x,y) to (z) by (x+y*16)
 # Convert (z) to (x,y) by (z%16, z//16)
 gameBoard = [None] * 192
+playerUnits = []
+enemyUnits = []
+isPlayerTurn = 0
 
 # Utility Functions for helping to manage unit coordinates
 def xytoz(x, y):
@@ -18,6 +21,33 @@ def getUnitAt(x, y):
 
 def setUnitAt(x, y, unit):
     gameBoard[xytoz(x,y)] = unit
+
+def createUnitAt(x, y, unit: sm.UnitSprite, isPlayerUnit):
+    if isPlayerUnit:
+        playerUnits.append(unit)
+    else:
+        unit.makeIntoEnemy()
+        enemyUnits.append(unit)
+    gameBoard[xytoz(x,y)] = unit
+
+def getDistanceBetween(x1,y1,x2,y2):
+    xdif = abs(x1-x2)
+    ydif = abs(y1-y2)
+    return xdif + ydif
+
+def setToPlayerTurn():
+    isPlayerTurn = 1
+    for unit in playerUnits:
+        unit.hasMoved = 0
+    for unit in enemyUnits:
+        unit.hasMoved = 1
+
+def setToEnemyTurn():
+    isPlayerTurn = 0
+    for unit in playerUnits:
+        unit.hasMoved = 1
+    for unit in enemyUnits:
+        unit.hasMoved = 0
 
 def main():
 
@@ -71,9 +101,9 @@ def main():
 
     #Creating sprites defined in spritemanager
     cursor = sm.Cursor()
-    setUnitAt(0, 5, sm.Vampire())
-    setUnitAt(0, 2, sm.Werewolf())
-    setUnitAt(3, 3, sm.Mummy())
+    createUnitAt(0, 5, sm.Vampire(), 1)
+    createUnitAt(0, 2, sm.Werewolf(), 1)
+    createUnitAt(3, 3, sm.Mummy(), 1)
 
     # define a variable to control the main loop
     running = True
@@ -108,15 +138,17 @@ def main():
 
         if (keystate[pygame.K_SPACE] and selectBuffer == 0):
             # THE BELOW CONDITIONAL WILL BE CHANGED TO CHECK IF UNIT BELONGS TO PLAYER AND IF UNIT HAS ALREADY MOVED
-            if(getUnitAt(cursorXPos, cursorYPos) == None):
-                setUnitAt(cursorXPos,cursorYPos, getUnitAt(selectedTileX, selectedTileY))
-                setUnitAt(selectedTileX,selectedTileY, None)
-                selectedTileX = -1
-                selectedTileY = -1
+            if(getUnitAt(cursorXPos, cursorYPos) == None and getUnitAt(selectedTileX, selectedTileY) != None):
+                if getUnitAt(selectedTileX, selectedTileY).MOV >= getDistanceBetween(cursorXPos,cursorYPos,selectedTileX,selectedTileY ):
+                    setUnitAt(cursorXPos,cursorYPos, getUnitAt(selectedTileX, selectedTileY))
+                    setUnitAt(selectedTileX,selectedTileY, None)
+                    getUnitAt(cursorXPos,cursorYPos).hasMoved = 1
+                    selectedTileX = -1
+                    selectedTileY = -1
             elif ((selectedTileX,selectedTileY) == (cursorXPos, cursorYPos)):
                 selectedTileX = -1
                 selectedTileY = -1
-            else:
+            elif ((getUnitAt(cursorXPos, cursorYPos) != None) and ((getUnitAt(cursorXPos, cursorYPos).isAlly) and getUnitAt(cursorXPos, cursorYPos).hasMoved == 0)):
                 selectedTileX = cursorXPos
                 selectedTileY = cursorYPos
             selectBuffer = 5
@@ -132,14 +164,19 @@ def main():
 
         # For debug, remove later
         if (keystate[pygame.K_0]):
-            setUnitAt(0,0, sm.Vampire())
-            getUnitAt(0,0).makeIntoEnemy()
+            createUnitAt(0,0, sm.Vampire(),0)
         
         if (keystate[pygame.K_1]):
-            setUnitAt(0,0, sm.Mummy())
+            createUnitAt(0,0, sm.Mummy(),0)
 
         if (keystate[pygame.K_2]):
-            setUnitAt(0,0, sm.Werewolf())
+            createUnitAt(0,0, sm.Werewolf(),0)
+
+        if (keystate[pygame.K_3]):
+            setToPlayerTurn()
+
+        if (keystate[pygame.K_4]):
+            setToEnemyTurn()
 
         # MANAGE DRAWING TO SCREEN FOR THE REST OF THE GAME LOOP
 
@@ -179,6 +216,11 @@ def main():
         screen.blit(healthIcon.get_image(), (1069,84+390))
         screen.blit(atkIcon.get_image(), (1069,148+390))
         screen.blit(moveIcon.get_image(), (1069,212+390))
+        if enemyUnitForStatDisplay != None:
+            screen.blit(enemyUnitForStatDisplay.get_image(), (1069,25+390))
+            screen.blit(getTextSurface(": " + str(enemyUnitForStatDisplay.HP), 64), (1133,89+390))
+            screen.blit(getTextSurface(": " + str(enemyUnitForStatDisplay.ATK), 64), (1133,153+390))
+            screen.blit(getTextSurface(": " + str(enemyUnitForStatDisplay.MOV), 64), (1133,217+390))
 
         screen.blit(cursor.get_image(), (25+cursorXPos*64,20+cursorYPos*64))        
 

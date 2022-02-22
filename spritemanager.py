@@ -105,6 +105,8 @@ class UnitSprite(GenericAnimatedSprite):
         super().update()
         if (self.hasMoved):
             self.animActive = False
+        else:
+            self.animActive = True
 
     def makeIntoEnemy(self):
         self.isAlly = 0

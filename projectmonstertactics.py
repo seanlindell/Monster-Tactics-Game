@@ -1,3 +1,4 @@
+from enum import Enum
 import pygame
 import spritemanager as sm
 
@@ -5,9 +6,25 @@ import spritemanager as sm
 # Convert (x,y) to (z) by (x+y*16)
 # Convert (z) to (x,y) by (z%16, z//16)
 gameBoard = [None] * 192
+
+# Lists used to store refrences to player and enemy units
+# Use createUnitAt() and removeUnit() to create and destroy units
+# and they'll mangae these for you
 playerUnits = []
 enemyUnits = []
 isPlayerTurn = 1
+
+# Enum used to differentiate types of cursor modes. Only one should need to be active,
+# so its just stored in the cursorMode variable. 
+# MAINBOARD is when you're moving around the main board
+# DROPDOWN is when you finished moving a unit and deciding what action to take
+# TARGETCHOICE is when you select an attacking or supportive action which requires you to choose a target next
+class cm(Enum):
+    MAINBOARD = 0
+    DROPDOWN = 1
+    TARGETCHOICE = 2
+
+cursorMode = cm.MAINBOARD
 
 # Utility Functions for helping to manage unit coordinates
 def xytoz(x, y):
@@ -19,8 +36,30 @@ def ztoxy(z):
 def getUnitAt(x, y):
     return gameBoard[xytoz(x,y)]
 
+def getDistanceBetween(x1,y1,x2,y2):
+    xdif = abs(x1-x2)
+    ydif = abs(y1-y2)
+    return xdif + ydif
+
+# DO NOT USE THIS METHOD TO CREATE UNITS. USE createUnitAt() INSTEAD
+# ONLY USE THIS FOR MOVING UNITS AROUND BY SETTING THE NEW LOCATION
+# WITH setUnitAt(newX, newY, getUnitAt(oldX, oldY))
+# THEN CLEARING THE OLD LOCATION BY setUnitAt(oldX, oldY, None)
+# ENSURE YOU DO NOT OVERWRITE ANY UNITS BY CHECKING getUnitAT(newX, newY) == None
+# IF YOU DON'T NEED TO DO ANYTHING FANCY JUST USE safeMoveUnits() INSTEAD
+
 def setUnitAt(x, y, unit):
     gameBoard[xytoz(x,y)] = unit
+
+def safeMoveUnits(oldX, oldY, newX, newY):
+    if getUnitAt(oldX, oldY) != None:
+        if getUnitAt(newX, newY) == None:
+            setUnitAt(newX, newY, getUnitAt(oldX, oldY))
+            setUnitAt(oldX, oldY, None)
+        else:
+            print("WARNING: UNIT AT " + newX + ", " + newY + " WAS GOING TO BE OVERWRITED")
+    else:
+        print("WARNING: THERE IS NO UNIT AT " + oldX + ", " + oldY + " TO MOVE")
 
 def createUnitAt(x, y, unit: sm.UnitSprite, isPlayerUnit):
     if isPlayerUnit:
@@ -30,10 +69,11 @@ def createUnitAt(x, y, unit: sm.UnitSprite, isPlayerUnit):
         enemyUnits.append(unit)
     gameBoard[xytoz(x,y)] = unit
 
-def getDistanceBetween(x1,y1,x2,y2):
-    xdif = abs(x1-x2)
-    ydif = abs(y1-y2)
-    return xdif + ydif
+def removeUnit(unit: sm.UnitSprite, isplayerUnit):
+    if isplayerUnit:
+        playerUnits.remove(unit)
+    else:
+        enemyUnits.remove(unit)
 
 def setToPlayerTurn():
     global isPlayerTurn
@@ -53,8 +93,12 @@ def setToEnemyTurn():
 
 def main():
 
+    # Cursor coordinates for the main board
     cursorXPos = 0
     cursorYPos = 0
+
+    # Dropdown menu selection cursor location
+    dropDownCursorValue = 0
 
     cursorMovementBuffer = 0
     selectBuffer = 0
@@ -65,6 +109,12 @@ def main():
     clock = pygame.time.Clock()
     screen = pygame.display.set_mode((1280,815))
 
+    # Information and methods for controlling movement canceling
+    unitLocationChache = (-1,-1)
+    def undoMove():
+        safeMoveUnits(cursorXPos, cursorYPos, unitLocationChache[0], unitLocationChache[1])
+
+    # Stores refrences to units needed for displaying stats
     playerUnitForStatDisplay = None
     enemyUnitForStatDisplay = None
 
@@ -81,6 +131,8 @@ def main():
     redTile = pygame.image.load("red_tile.png").convert_alpha()
     lblueTile = pygame.image.load("lblue_tile.png").convert_alpha()
     purpleTile = pygame.image.load("purple_tile.png").convert_alpha()
+
+    fullmenu = pygame.image.load("dropdownmenu4.png").convert_alpha()
 
     playerblockSprite = pygame.image.load("playerstatsblock.png").convert_alpha()
     enemyblockSprite = pygame.image.load("enemystatsblock.png").convert_alpha()
@@ -142,6 +194,7 @@ def main():
             # THE BELOW CONDITIONAL WILL BE CHANGED TO CHECK IF UNIT BELONGS TO PLAYER AND IF UNIT HAS ALREADY MOVED
             if(getUnitAt(cursorXPos, cursorYPos) == None and getUnitAt(selectedTileX, selectedTileY) != None):
                 if getUnitAt(selectedTileX, selectedTileY).MOV >= getDistanceBetween(cursorXPos,cursorYPos,selectedTileX,selectedTileY ):
+                    unitLocationChache = (selectedTileX, selectedTileY)
                     setUnitAt(cursorXPos,cursorYPos, getUnitAt(selectedTileX, selectedTileY))
                     setUnitAt(selectedTileX,selectedTileY, None)
                     getUnitAt(cursorXPos,cursorYPos).hasMoved = 1
@@ -242,6 +295,8 @@ def main():
             screen.blit(getTextSurface(": " + str(enemyUnitForStatDisplay.MOV), 64), (1133,217+390))
 
         screen.blit(cursor.get_image(), (25+cursorXPos*64,20+cursorYPos*64))        
+
+        screen.blit(fullmenu, (25+(1+cursorXPos)*64,20+(1+cursorYPos)*64))
 
         pygame.display.flip()
 

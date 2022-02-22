@@ -125,6 +125,17 @@ def main():
         elif (selectBuffer > 0):
             selectBuffer -= 1
 
+        # For debug, remove later
+        if (keystate[pygame.K_0]):
+            setUnitAt(0,0, sm.Vampire())
+        
+        if (keystate[pygame.K_1]):
+            setUnitAt(0,0, sm.Mummy())
+
+        if (keystate[pygame.K_2]):
+            setUnitAt(0,0, sm.Werewolf())
+
+
         pygame.display.flip()
         clock.tick(30)
      

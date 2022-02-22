@@ -7,7 +7,7 @@ import spritemanager as sm
 gameBoard = [None] * 192
 playerUnits = []
 enemyUnits = []
-isPlayerTurn = 0
+isPlayerTurn = 1
 
 # Utility Functions for helping to manage unit coordinates
 def xytoz(x, y):
@@ -36,6 +36,7 @@ def getDistanceBetween(x1,y1,x2,y2):
     return xdif + ydif
 
 def setToPlayerTurn():
+    global isPlayerTurn
     isPlayerTurn = 1
     for unit in playerUnits:
         unit.hasMoved = 0
@@ -43,6 +44,7 @@ def setToPlayerTurn():
         unit.hasMoved = 1
 
 def setToEnemyTurn():
+    global isPlayerTurn
     isPlayerTurn = 0
     for unit in playerUnits:
         unit.hasMoved = 1
@@ -177,6 +179,23 @@ def main():
 
         if (keystate[pygame.K_4]):
             setToEnemyTurn()
+
+        if isPlayerTurn:
+            allPlayerUnitsMoved = 1
+            for unit in playerUnits:
+                if not unit.hasMoved:
+                    allPlayerUnitsMoved = 0
+            if allPlayerUnitsMoved:
+                print("here")
+                setToEnemyTurn()
+        else:
+            allEnemyUnitsMoved = 1
+            for unit in enemyUnits:  
+                if not unit.hasMoved:
+                    allEnemyUnitsMoved = 0
+            if allEnemyUnitsMoved:
+                setToPlayerTurn()
+
 
         # MANAGE DRAWING TO SCREEN FOR THE REST OF THE GAME LOOP
 

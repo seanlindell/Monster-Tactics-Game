@@ -53,6 +53,7 @@ def main():
 
     whiteTile = pygame.transform.scale(whiteTile, (64, 64))
     lblueTile = pygame.transform.scale(lblueTile, (64, 64))
+    redTile = pygame.transform.scale(redTile, (64, 64))
     purpleTile = pygame.transform.scale(purpleTile, (64, 64))
 
     #Creating sprites defined in spritemanager
@@ -82,6 +83,8 @@ def main():
             for y in range(12):
                 if (getUnitAt(x,y) != None):
                     unit = getUnitAt(x,y)
+                    if not getUnitAt(x,y).isAlly:
+                        screen.blit(redTile, (25+x*64,20+y*64))
                     unit.update()
                     screen.blit(getUnitAt(x,y).get_image(), (25+x*64,20+y*64))
 
@@ -135,6 +138,7 @@ def main():
         # For debug, remove later
         if (keystate[pygame.K_0]):
             setUnitAt(0,0, sm.Vampire())
+            getUnitAt(0,0).makeIntoEnemy()
         
         if (keystate[pygame.K_1]):
             setUnitAt(0,0, sm.Mummy())

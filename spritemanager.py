@@ -86,7 +86,7 @@ class GenericStaticSprite(pygame.sprite.Sprite):
 
 # Subclass of GenericAnimatedSprite intended to be used by creating further subclasses for each unit type.
 # Avoid instatantiating this sprite on its own
-class PlayerUnitSprite(GenericAnimatedSprite):
+class UnitSprite(GenericAnimatedSprite):
 
     maxHP = 1
     HP = 1
@@ -94,6 +94,7 @@ class PlayerUnitSprite(GenericAnimatedSprite):
     MOV = 3
 
     hasMoved = 0
+    isAlly = 1
 
     def __init__(self, maxHP, ATK, MOV):
         super().__init__()
@@ -108,6 +109,11 @@ class PlayerUnitSprite(GenericAnimatedSprite):
         if (self.hasMoved):
             self.animActive = False
 
+    def makeIntoEnemy(self):
+        self.isAlly = 0
+        for x in range(2):
+            self.images[x] = pygame.transform.flip(self.images[x], True, False)
+
 class Cursor(GenericAnimatedSprite):
 
     def __init__(self):
@@ -115,19 +121,19 @@ class Cursor(GenericAnimatedSprite):
         self.images = load_images("cursor")
         self.animCycle = 5
 
-class Vampire(PlayerUnitSprite):
+class Vampire(UnitSprite):
 
     def __init__(self):
-        PlayerUnitSprite.__init__(self,5,3,4)
+        UnitSprite.__init__(self,5,3,4)
         self.images = load_images("vampire")
 
-class Werewolf(PlayerUnitSprite):
+class Werewolf(UnitSprite):
 
     def __init__(self):
-        PlayerUnitSprite.__init__(self,5,8,2)
+        UnitSprite.__init__(self,5,8,2)
         self.images = load_images("werewolf")
 
-class Mummy(PlayerUnitSprite):
+class Mummy(UnitSprite):
     
     def __init__(self):
         super().__init__(10, 2, 3)

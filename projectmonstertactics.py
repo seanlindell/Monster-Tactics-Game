@@ -1,11 +1,33 @@
 import pygame
 import spritemanager as sm
 
+# Gameboard is 16x12, but one dimentional
+# Convert (x,y) to (z) by (x+y*16)
+# Convert (z) to (x,y) by (z%16, z//16)
+gameBoard = [None] * 192
+
+def xytoz(x, y):
+    return x+y*16
+
+def ztoxy(z):
+    return (z%16,z//16)
+
+def getUnitAt(x, y):
+    return gameBoard[xytoz(x,y)]
+
+def setUnitAt(x, y, unit):
+    gameBoard[xytoz(x,y)] = unit
+
 def main():
 
     cursorXPos = 0
     cursorYPos = 0
+
     cursorMovementBuffer = 0
+    selectBuffer = 0
+
+    selectedTileX = -1
+    selectedTileY = -1
 
     clock = pygame.time.Clock()
     screen = pygame.display.set_mode((1280,800))
@@ -31,9 +53,9 @@ def main():
 
     #Creating sprites defined in spritemanager
     cursor = sm.Cursor()
-    myVamp = sm.Vampire()
-    myWere = sm.Werewolf()
-    myMumm = sm.Mummy()
+    setUnitAt(0, 5, sm.Vampire())
+    setUnitAt(0, 2, sm.Werewolf())
+    setUnitAt(3, 3, sm.Mummy())
 
     # define a variable to control the main loop
     running = True
@@ -44,21 +66,22 @@ def main():
         screen.fill((255, 255, 255))
 
         cursor.update()
-        myVamp.update()
-        myWere.update()
-        myMumm.update()
 
-        for x in range(10):
-            for y in range(10):
-                screen.blit(purpleTile, (100+x*64,100+y*64))
+        for x in range(16):
+            for y in range(12):
+                screen.blit(purpleTile, (25+x*64,20+y*64))
 
-        screen.blit(myVamp.get_image(), (100+1*64,100+1*64))
-        screen.blit(myWere.get_image(), (100+2*64,100+2*64))
-        screen.blit(myMumm.get_image(), (100+3*64,100+3*64))
-        screen.blit(cursor.get_image(), (100+cursorXPos*64,100+cursorYPos*64))
+        if (selectedTileX != -1 and selectedTileY != -1):
+            screen.blit(lblueTile, (25+selectedTileX*64,20+selectedTileY*64))
 
-        pygame.display.flip()
-        clock.tick(30)
+        for x in range(16):
+            for y in range(12):
+                if (getUnitAt(x,y) != None):
+                    unit = getUnitAt(x,y)
+                    unit.update()
+                    screen.blit(getUnitAt(x,y).get_image(), (25+x*64,20+y*64))
+
+        screen.blit(cursor.get_image(), (25+cursorXPos*64,20+cursorYPos*64))        
 
         # event handling, gets all event from the event queue
         for event in pygame.event.get():
@@ -71,20 +94,39 @@ def main():
         if not cursorMovementBuffer:
             if (keystate[pygame.K_UP] and cursorYPos > 0):
                 cursorYPos -= 1
-                cursorMovementBuffer = 1
-            elif (keystate[pygame.K_DOWN] and cursorYPos < 9):
+                cursorMovementBuffer = 2
+            elif (keystate[pygame.K_DOWN] and cursorYPos < 11):
                 cursorYPos += 1
-                cursorMovementBuffer = 1
-            elif (keystate[pygame.K_RIGHT] and cursorXPos < 9):
+                cursorMovementBuffer = 2
+            elif (keystate[pygame.K_RIGHT] and cursorXPos < 15):
                 cursorXPos += 1
-                cursorMovementBuffer = 1
+                cursorMovementBuffer = 2
             elif (keystate[pygame.K_LEFT] and cursorXPos > 0):
                 cursorXPos -= 1
-                cursorMovementBuffer = 1
+                cursorMovementBuffer = 2
         else:
-            cursorMovementBuffer = 0
-        if (keystate[pygame.K_SPACE]):
-            myVamp.animActive = (myVamp.animActive+1)%2
+            if cursorMovementBuffer > 0:
+                cursorMovementBuffer -= 1
+
+        if (keystate[pygame.K_SPACE] and selectBuffer == 0):
+            # THE BELOW CONDITIONAL WILL BE CHANGED TO CHECK IF UNIT BELONGS TO PLAYER AND IF UNIT HAS ALREADY MOVED
+            if(getUnitAt(selectedTileX, selectedTileY) != None and getUnitAt(cursorXPos, cursorYPos) == None):
+                setUnitAt(cursorXPos,cursorYPos, getUnitAt(selectedTileX, selectedTileY))
+                setUnitAt(selectedTileX,selectedTileY, None)
+                selectedTileX = -1
+                selectedTileY = -1
+            elif ((selectedTileX,selectedTileY) == (cursorXPos, cursorYPos)):
+                selectedTileX = -1
+                selectedTileY = -1
+            else:
+                selectedTileX = cursorXPos
+                selectedTileY = cursorYPos
+            selectBuffer = 3
+        elif (selectBuffer > 0):
+            selectBuffer -= 1
+
+        pygame.display.flip()
+        clock.tick(30)
      
      
 # run the main function only if this module is executed as the main script

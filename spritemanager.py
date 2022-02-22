@@ -93,6 +93,8 @@ class PlayerUnitSprite(GenericAnimatedSprite):
     ATK = 1
     MOV = 3
 
+    hasMoved = 0
+
     def __init__(self, maxHP, ATK, MOV):
         super().__init__()
         self.maxHP = maxHP
@@ -100,6 +102,11 @@ class PlayerUnitSprite(GenericAnimatedSprite):
         self.ATK = ATK
         self.MOV = MOV
         self.animCycle = 15
+
+    def update(self):
+        super().update()
+        if (self.hasMoved):
+            self.animActive = False
 
 class Cursor(GenericAnimatedSprite):
 

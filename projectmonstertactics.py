@@ -24,8 +24,6 @@ class cm(Enum):
     DROPDOWN = 1
     TARGETCHOICE = 2
 
-cursorMode = cm.MAINBOARD
-
 # Utility Functions for helping to manage unit coordinates
 def xytoz(x, y):
     return x+y*16
@@ -33,7 +31,7 @@ def xytoz(x, y):
 def ztoxy(z):
     return (z%16,z//16)
 
-def getUnitAt(x, y):
+def getUnitAt(x, y) -> sm.UnitSprite:
     return gameBoard[xytoz(x,y)]
 
 def getDistanceBetween(x1,y1,x2,y2):
@@ -93,18 +91,52 @@ def setToEnemyTurn():
 
 def main():
 
+    cursorMode = cm.MAINBOARD
+
     # Cursor coordinates for the main board
     cursorXPos = 0
     cursorYPos = 0
 
     # Dropdown menu selection cursor location
     dropDownCursorValue = 0
+    dropDownMenuElements = []
+    dropDownShouldAddCancle = 0
+    def buildMenu(elementsList: list):
+        elementsList.clear()
+        x = cursorXPos
+        y = cursorYPos
+        if x>0 and getUnitAt(x-1,y) != None and not getUnitAt(x-1,y).isAlly:
+            elementsList.append("Attack")
+        elif x<15 and getUnitAt(x+1,y) != None and not getUnitAt(x+1,y).isAlly:
+            elementsList.append("Attack")
+        elif y>0 and getUnitAt(x,y-1) != None and not getUnitAt(x,y-1).isAlly:
+            elementsList.append("Attack")
+        elif y<11 and getUnitAt(x,y+1) != None and not getUnitAt(x,y+1).isAlly:
+            elementsList.append("Attack")
+        
+        if dropDownShouldAddCancle:
+            elementsList.append("Cancle")
+        
+        elementsList.append("Wait")
 
     cursorMovementBuffer = 0
     selectBuffer = 0
 
     selectedTileX = -1
     selectedTileY = -1
+
+    targetChoiceModifier = (0,-1)
+
+    def checkIfEnemyAtRelativePosition(x,y,xMod, yMod):
+        if x>0 and xMod==-1 and getUnitAt(x-1,y) != None and not getUnitAt(x-1,y).isAlly:
+            return True
+        elif x<15 and xMod==1 and getUnitAt(x+1,y) != None and not getUnitAt(x+1,y).isAlly:
+            return True
+        elif y>0 and yMod==-1 and getUnitAt(x,y-1) != None and not getUnitAt(x,y-1).isAlly:
+            return True
+        elif y<11 and yMod==1 and getUnitAt(x,y+1) != None and not getUnitAt(x,y+1).isAlly:
+            return True
+        return False
 
     clock = pygame.time.Clock()
     screen = pygame.display.set_mode((1280,815))
@@ -132,7 +164,8 @@ def main():
     lblueTile = pygame.image.load("lblue_tile.png").convert_alpha()
     purpleTile = pygame.image.load("purple_tile.png").convert_alpha()
 
-    fullmenu = pygame.image.load("dropdownmenu4.png").convert_alpha()
+    dropDownMenu = sm.dropDownMenu()
+    dropDownmenuCursor = sm.GenericStaticSprite("dropdownmenucursor")
 
     playerblockSprite = pygame.image.load("playerstatsblock.png").convert_alpha()
     enemyblockSprite = pygame.image.load("enemystatsblock.png").convert_alpha()
@@ -144,13 +177,6 @@ def main():
     atkIcon = sm.GenericStaticSprite("swords")
     healthIcon = sm.GenericStaticSprite("heart")
     moveIcon = sm.GenericStaticSprite("boot")
-
-    # Text management
-    gameFontType = pygame.font.get_default_font()
-    def getTextSurface(text, size):
-        fullGameFont = pygame.font.Font(gameFontType, size)
-        textSurface = fullGameFont.render(text, True, (0,0,0))
-        return textSurface
 
 
     #Creating sprites defined in spritemanager
@@ -174,39 +200,92 @@ def main():
 
         keystate = pygame.key.get_pressed()
         if not cursorMovementBuffer:
-            if (keystate[pygame.K_UP] and cursorYPos > 0):
-                cursorYPos -= 1
-                cursorMovementBuffer = 3
-            if (keystate[pygame.K_DOWN] and cursorYPos < 11):
-                cursorYPos += 1
-                cursorMovementBuffer = 3
-            if (keystate[pygame.K_RIGHT] and cursorXPos < 15):
-                cursorXPos += 1
-                cursorMovementBuffer = 3
-            if (keystate[pygame.K_LEFT] and cursorXPos > 0):
-                cursorXPos -= 1
-                cursorMovementBuffer = 3
+            if cursorMode == cm.MAINBOARD:
+                if (keystate[pygame.K_UP] and cursorYPos > 0):
+                    cursorYPos -= 1
+                    cursorMovementBuffer = 3
+                if (keystate[pygame.K_DOWN] and cursorYPos < 11):
+                    cursorYPos += 1
+                    cursorMovementBuffer = 3
+                if (keystate[pygame.K_RIGHT] and cursorXPos < 15):
+                    cursorXPos += 1
+                    cursorMovementBuffer = 3
+                if (keystate[pygame.K_LEFT] and cursorXPos > 0):
+                    cursorXPos -= 1
+                    cursorMovementBuffer = 3
+            elif cursorMode == cm.DROPDOWN:
+                if (keystate[pygame.K_UP] and dropDownCursorValue > 0):
+                    dropDownCursorValue -= 1
+                    cursorMovementBuffer = 3
+                if (keystate[pygame.K_DOWN] and dropDownCursorValue < len(dropDownMenuElements)-1):
+                    dropDownCursorValue += 1
+                    cursorMovementBuffer = 3
+            elif cursorMode == cm.TARGETCHOICE:
+                if (keystate[pygame.K_UP] and checkIfEnemyAtRelativePosition(cursorXPos,cursorYPos,0,-1)):
+                    targetChoiceModifier = (0, -1)
+                    cursorMovementBuffer = 3
+                if (keystate[pygame.K_DOWN] and checkIfEnemyAtRelativePosition(cursorXPos,cursorYPos,0,1)):
+                    targetChoiceModifier = (0, 1)
+                    cursorMovementBuffer = 3
+                if (keystate[pygame.K_RIGHT] and checkIfEnemyAtRelativePosition(cursorXPos,cursorYPos,1,0)):
+                    targetChoiceModifier = (1, 0)
+                    cursorMovementBuffer = 3
+                if (keystate[pygame.K_LEFT] and checkIfEnemyAtRelativePosition(cursorXPos,cursorYPos,-1,0)):
+                    targetChoiceModifier = (-1, 0)
+                    cursorMovementBuffer = 3
         else:
             if cursorMovementBuffer > 0:
                 cursorMovementBuffer -= 1
 
         if (keystate[pygame.K_SPACE] and selectBuffer == 0):
-            # THE BELOW CONDITIONAL WILL BE CHANGED TO CHECK IF UNIT BELONGS TO PLAYER AND IF UNIT HAS ALREADY MOVED
-            if(getUnitAt(cursorXPos, cursorYPos) == None and getUnitAt(selectedTileX, selectedTileY) != None):
-                if getUnitAt(selectedTileX, selectedTileY).MOV >= getDistanceBetween(cursorXPos,cursorYPos,selectedTileX,selectedTileY ):
-                    unitLocationChache = (selectedTileX, selectedTileY)
-                    setUnitAt(cursorXPos,cursorYPos, getUnitAt(selectedTileX, selectedTileY))
-                    setUnitAt(selectedTileX,selectedTileY, None)
-                    getUnitAt(cursorXPos,cursorYPos).hasMoved = 1
+            if cursorMode == cm.MAINBOARD:
+                if(getUnitAt(cursorXPos, cursorYPos) == None and getUnitAt(selectedTileX, selectedTileY) != None):
+                    if getUnitAt(selectedTileX, selectedTileY).MOV >= getDistanceBetween(cursorXPos,cursorYPos,selectedTileX,selectedTileY ):
+                        unitLocationChache = (selectedTileX, selectedTileY)
+                        setUnitAt(cursorXPos,cursorYPos, getUnitAt(selectedTileX, selectedTileY))
+                        setUnitAt(selectedTileX,selectedTileY, None)
+                        getUnitAt(cursorXPos,cursorYPos).hasMoved = 1
+                        selectedTileX = -1
+                        selectedTileY = -1
+                        dropDownCursorValue = 0
+                        dropDownShouldAddCancle = 1
+                        buildMenu(dropDownMenuElements)
+                        cursorMode = cm.DROPDOWN
+                elif ((selectedTileX,selectedTileY) == (cursorXPos, cursorYPos)):
                     selectedTileX = -1
                     selectedTileY = -1
-            elif ((selectedTileX,selectedTileY) == (cursorXPos, cursorYPos)):
-                selectedTileX = -1
-                selectedTileY = -1
-            elif ((getUnitAt(cursorXPos, cursorYPos) != None) and ((getUnitAt(cursorXPos, cursorYPos).isAlly) and getUnitAt(cursorXPos, cursorYPos).hasMoved == 0)):
-                selectedTileX = cursorXPos
-                selectedTileY = cursorYPos
-            selectBuffer = 5
+                    getUnitAt(cursorXPos,cursorYPos).hasMoved = 1
+                    dropDownCursorValue = 0
+                    dropDownShouldAddCancle = 0
+                    buildMenu(dropDownMenuElements)
+                    cursorMode = cm.DROPDOWN
+                elif ((getUnitAt(cursorXPos, cursorYPos) != None) and ((getUnitAt(cursorXPos, cursorYPos).isAlly) and getUnitAt(cursorXPos, cursorYPos).hasMoved == 0)):
+                    selectedTileX = cursorXPos
+                    selectedTileY = cursorYPos
+                selectBuffer = 5
+            elif cursorMode == cm.DROPDOWN:
+                if dropDownMenuElements[dropDownCursorValue] == "Wait":
+                    cursorMode = cm.MAINBOARD
+                elif dropDownMenuElements[dropDownCursorValue] == "Cancle":
+                    getUnitAt(cursorXPos,cursorYPos).hasMoved = 0
+                    undoMove()
+                    cursorMode = cm.MAINBOARD
+                elif dropDownMenuElements[dropDownCursorValue] == "Attack":
+                    cursorMode = cm.TARGETCHOICE
+                    if checkIfEnemyAtRelativePosition(cursorXPos,cursorYPos,1,0):
+                        targetChoiceModifier = (1,0)
+                        selectBuffer = 10
+                    if checkIfEnemyAtRelativePosition(cursorXPos,cursorYPos,-1,0):
+                        targetChoiceModifier = (-1,0)
+                        selectBuffer = 10
+                    if checkIfEnemyAtRelativePosition(cursorXPos,cursorYPos,0,1):
+                        targetChoiceModifier = (0,1)
+                        selectBuffer = 10
+                    if checkIfEnemyAtRelativePosition(cursorXPos,cursorYPos,0,-1):
+                        targetChoiceModifier = (0,-1)
+                        selectBuffer = 10
+            elif cursorMode == cm.TARGETCHOICE:
+                cursorMode = cm.MAINBOARD
         elif (selectBuffer > 0):
             selectBuffer -= 1
 
@@ -216,16 +295,22 @@ def main():
                 playerUnitForStatDisplay = getUnitAt(cursorXPos, cursorYPos)
             else:
                 enemyUnitForStatDisplay = getUnitAt(cursorXPos, cursorYPos)
+            if cursorMode is cm.TARGETCHOICE:
+                if getUnitAt(cursorXPos+ targetChoiceModifier[0], cursorYPos+ targetChoiceModifier[1]).isAlly:
+                    playerUnitForStatDisplay = getUnitAt(cursorXPos + targetChoiceModifier[0], cursorYPos+ targetChoiceModifier[1])
+                else:
+                    enemyUnitForStatDisplay = getUnitAt(cursorXPos + targetChoiceModifier[0], cursorYPos+ targetChoiceModifier[1])
+
 
         # For debug, remove later
         if (keystate[pygame.K_0]):
-            createUnitAt(0,0, sm.Vampire(),0)
+            createUnitAt(10,10, sm.Vampire(),0)
         
         if (keystate[pygame.K_1]):
             createUnitAt(0,0, sm.Mummy(),0)
 
         if (keystate[pygame.K_2]):
-            createUnitAt(0,0, sm.Werewolf(),0)
+            createUnitAt(2,0, sm.Werewolf(),0)
 
         if (keystate[pygame.K_3]):
             setToPlayerTurn()
@@ -233,14 +318,22 @@ def main():
         if (keystate[pygame.K_4]):
             setToEnemyTurn()
 
+        if (keystate[pygame.K_5]):
+            dropDownCursorValue = 0
+            buildMenu(dropDownMenuElements)
+            cursorMode = cm.DROPDOWN
+
+        if (keystate[pygame.K_6]):
+            cursorMode = cm.MAINBOARD
+
         if isPlayerTurn:
-            allPlayerUnitsMoved = 1
-            for unit in playerUnits:
-                if not unit.hasMoved:
-                    allPlayerUnitsMoved = 0
-            if allPlayerUnitsMoved:
-                print("here")
-                setToEnemyTurn()
+            if cursorMode == cm.MAINBOARD:
+                allPlayerUnitsMoved = 1
+                for unit in playerUnits:
+                    if not unit.hasMoved:
+                        allPlayerUnitsMoved = 0
+                if allPlayerUnitsMoved:
+                    setToEnemyTurn()
         else:
             allEnemyUnitsMoved = 1
             for unit in enemyUnits:  
@@ -280,9 +373,9 @@ def main():
         screen.blit(moveIcon.get_image(), (1069,217))
         if playerUnitForStatDisplay != None:
             screen.blit(playerUnitForStatDisplay.get_image(), (1069,25))
-            screen.blit(getTextSurface(": " + str(playerUnitForStatDisplay.HP), 64), (1133,89))
-            screen.blit(getTextSurface(": " + str(playerUnitForStatDisplay.ATK), 64), (1133,153))
-            screen.blit(getTextSurface(": " + str(playerUnitForStatDisplay.MOV), 64), (1133,217))
+            screen.blit(sm.getTextSurface(": " + str(playerUnitForStatDisplay.HP), 64), (1133,89))
+            screen.blit(sm.getTextSurface(": " + str(playerUnitForStatDisplay.ATK), 64), (1133,153))
+            screen.blit(sm.getTextSurface(": " + str(playerUnitForStatDisplay.MOV), 64), (1133,217))
 
         screen.blit(enemyblockSprite, (1064,410))
         screen.blit(healthIcon.get_image(), (1069,84+390))
@@ -290,13 +383,29 @@ def main():
         screen.blit(moveIcon.get_image(), (1069,212+390))
         if enemyUnitForStatDisplay != None:
             screen.blit(enemyUnitForStatDisplay.get_image(), (1069,25+390))
-            screen.blit(getTextSurface(": " + str(enemyUnitForStatDisplay.HP), 64), (1133,89+390))
-            screen.blit(getTextSurface(": " + str(enemyUnitForStatDisplay.ATK), 64), (1133,153+390))
-            screen.blit(getTextSurface(": " + str(enemyUnitForStatDisplay.MOV), 64), (1133,217+390))
+            screen.blit(sm.getTextSurface(": " + str(enemyUnitForStatDisplay.HP), 64), (1133,89+390))
+            screen.blit(sm.getTextSurface(": " + str(enemyUnitForStatDisplay.ATK), 64), (1133,153+390))
+            screen.blit(sm.getTextSurface(": " + str(enemyUnitForStatDisplay.MOV), 64), (1133,217+390))
 
-        screen.blit(cursor.get_image(), (25+cursorXPos*64,20+cursorYPos*64))        
 
-        screen.blit(fullmenu, (25+(1+cursorXPos)*64,20+(1+cursorYPos)*64))
+        # draw the main cursor
+        if cursorMode == cm.MAINBOARD:
+            screen.blit(cursor.get_image(), (25+cursorXPos*64,20+cursorYPos*64))
+
+        if cursorMode == cm.TARGETCHOICE:
+            screen.blit(cursor.get_image(), (25+(cursorXPos + targetChoiceModifier[0])*64,20+(cursorYPos + targetChoiceModifier[1])*64))
+
+        if cursorMode == cm.DROPDOWN:
+            # TODO: Go back and make this more elegant, lazy implimentation as is now
+            dropDownCursorXModifier = 0
+            dropDownCursorYModifier = 0
+            if cursorXPos > 12:
+                dropDownCursorXModifier = -256
+            if cursorYPos > 6:
+                dropDownCursorYModifier = -384
+            screen.blit(dropDownMenu.get_image(dropDownMenuElements), ((25+(1+cursorXPos)*64)+dropDownCursorXModifier, (20+(1+cursorYPos)*64)+dropDownCursorYModifier))
+            screen.blit(dropDownmenuCursor.get_image(), ((25+(1+cursorXPos)*64)+dropDownCursorXModifier, ((20+(1+cursorYPos)*64)+dropDownCursorYModifier)+dropDownCursorValue*80))
+
 
         pygame.display.flip()
 

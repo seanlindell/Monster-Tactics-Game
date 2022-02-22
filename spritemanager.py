@@ -1,5 +1,13 @@
+from aifc import Error
 import pygame
 import os
+
+# Text management
+gameFontType = pygame.font.get_default_font()
+def getTextSurface(text, size):
+        fullGameFont = pygame.font.Font(gameFontType, size)
+        textSurface = fullGameFont.render(text, True, (0,0,0))
+        return textSurface
 
 # This method is used to load the surfaces needed for animated and non-animated sprites
 # When saving images for sprites, save as pngs and for animated sprites, have each frame
@@ -119,6 +127,26 @@ class Cursor(GenericAnimatedSprite):
         super().__init__()
         self.images = load_images("cursor")
         self.animCycle = 5
+
+class dropDownMenu(GenericAnimatedSprite):
+
+    def __init__(self):
+        super().__init__()
+        self.images = load_images("dropdownmenu")
+
+    def update(self):
+        print("You should not be calling update on the dropdown menu because it is a special kind of animated sprite (it's not actually animated")
+        raise Error
+
+    def get_image(self, menuOptions: list):
+        if len(menuOptions)>4:
+            print("We don't support more than 4 menu options right now, more sprites would need to be made")
+        menuSurface = self.images[len(menuOptions)-1]
+        i = 0
+        for text in menuOptions:
+            menuSurface.blit(getTextSurface(text, 45), (5, 16+82*i))
+            i += 1
+        return menuSurface
 
 class Vampire(UnitSprite):
 

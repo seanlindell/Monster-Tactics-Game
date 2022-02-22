@@ -6,6 +6,7 @@ import spritemanager as sm
 # Convert (z) to (x,y) by (z%16, z//16)
 gameBoard = [None] * 192
 
+# Utility Functions for helping to manage unit coordinates
 def xytoz(x, y):
     return x+y*16
 
@@ -32,6 +33,9 @@ def main():
     clock = pygame.time.Clock()
     screen = pygame.display.set_mode((1280,815))
 
+    playerUnitForStatDisplay = None
+    enemyUnitForStatDisplay = None
+
     # initialize the pygame module
     pygame.init()
 
@@ -43,18 +47,27 @@ def main():
 
     #Loading tile images, may change later to store them as sprites
     redTile = pygame.image.load("red_tile.png").convert_alpha()
-    blueTile = pygame.image.load("blue_tile.png").convert_alpha()
     lblueTile = pygame.image.load("lblue_tile.png").convert_alpha()
     purpleTile = pygame.image.load("purple_tile.png").convert_alpha()
-    whiteTile = pygame.image.load("white_tile.png").convert_alpha()
 
     playerblockSprite = pygame.image.load("playerstatsblock.png").convert_alpha()
     enemyblockSprite = pygame.image.load("enemystatsblock.png").convert_alpha()
 
-    whiteTile = pygame.transform.scale(whiteTile, (64, 64))
     lblueTile = pygame.transform.scale(lblueTile, (64, 64))
     redTile = pygame.transform.scale(redTile, (64, 64))
     purpleTile = pygame.transform.scale(purpleTile, (64, 64))
+
+    atkIcon = sm.GenericStaticSprite("swords")
+    healthIcon = sm.GenericStaticSprite("heart")
+    moveIcon = sm.GenericStaticSprite("boot")
+
+    # Text management
+    gameFontType = pygame.font.get_default_font()
+    def getTextSurface(text, size):
+        fullGameFont = pygame.font.Font(gameFontType, size)
+        textSurface = fullGameFont.render(text, True, (0,0,0))
+        return textSurface
+
 
     #Creating sprites defined in spritemanager
     cursor = sm.Cursor()
@@ -67,31 +80,6 @@ def main():
      
     # main loop
     while running:
-
-        screen.fill((255, 255, 255))
-
-        cursor.update()
-
-        for x in range(16):
-            for y in range(12):
-                screen.blit(purpleTile, (25+x*64,20+y*64))
-
-        if (selectedTileX != -1 and selectedTileY != -1):
-            screen.blit(lblueTile, (25+selectedTileX*64,20+selectedTileY*64))
-
-        for x in range(16):
-            for y in range(12):
-                if (getUnitAt(x,y) != None):
-                    unit = getUnitAt(x,y)
-                    if not getUnitAt(x,y).isAlly:
-                        screen.blit(redTile, (25+x*64,20+y*64))
-                    unit.update()
-                    screen.blit(getUnitAt(x,y).get_image(), (25+x*64,20+y*64))
-
-        screen.blit(playerblockSprite, (40+1024,20))
-        screen.blit(enemyblockSprite, (40+1024,33+377))
-
-        screen.blit(cursor.get_image(), (25+cursorXPos*64,20+cursorYPos*64))        
 
         # event handling, gets all event from the event queue
         for event in pygame.event.get():
@@ -135,6 +123,13 @@ def main():
         elif (selectBuffer > 0):
             selectBuffer -= 1
 
+        # If the cursor is over a unit, update stat displays
+        if getUnitAt(cursorXPos, cursorYPos) != None:
+            if getUnitAt(cursorXPos, cursorYPos).isAlly:
+                playerUnitForStatDisplay = getUnitAt(cursorXPos, cursorYPos)
+            else:
+                enemyUnitForStatDisplay = getUnitAt(cursorXPos, cursorYPos)
+
         # For debug, remove later
         if (keystate[pygame.K_0]):
             setUnitAt(0,0, sm.Vampire())
@@ -146,8 +141,50 @@ def main():
         if (keystate[pygame.K_2]):
             setUnitAt(0,0, sm.Werewolf())
 
+        # MANAGE DRAWING TO SCREEN FOR THE REST OF THE GAME LOOP
+
+        screen.fill((255, 255, 255))
+
+        cursor.update()
+
+        for x in range(16):
+            for y in range(12):
+                screen.blit(purpleTile, (25+x*64,20+y*64))
+
+        if (selectedTileX != -1 and selectedTileY != -1):
+            screen.blit(lblueTile, (25+selectedTileX*64,20+selectedTileY*64))
+
+        for x in range(16):
+            for y in range(12):
+                if (getUnitAt(x,y) != None):
+                    unit = getUnitAt(x,y)
+                    if not getUnitAt(x,y).isAlly:
+                        screen.blit(redTile, (25+x*64,20+y*64))
+                    unit.update()
+                    screen.blit(getUnitAt(x,y).get_image(), (25+x*64,20+y*64))
+
+
+        # Draw sprites which contain stats for player
+        screen.blit(playerblockSprite, (1064,20))
+        screen.blit(healthIcon.get_image(), (1069,89))
+        screen.blit(atkIcon.get_image(), (1069,153))
+        screen.blit(moveIcon.get_image(), (1069,217))
+        if playerUnitForStatDisplay != None:
+            screen.blit(playerUnitForStatDisplay.get_image(), (1069,25))
+            screen.blit(getTextSurface(": " + str(playerUnitForStatDisplay.HP), 64), (1133,89))
+            screen.blit(getTextSurface(": " + str(playerUnitForStatDisplay.ATK), 64), (1133,153))
+            screen.blit(getTextSurface(": " + str(playerUnitForStatDisplay.MOV), 64), (1133,217))
+
+        screen.blit(enemyblockSprite, (1064,410))
+        screen.blit(healthIcon.get_image(), (1069,84+390))
+        screen.blit(atkIcon.get_image(), (1069,148+390))
+        screen.blit(moveIcon.get_image(), (1069,212+390))
+
+        screen.blit(cursor.get_image(), (25+cursorXPos*64,20+cursorYPos*64))        
 
         pygame.display.flip()
+
+        # Doesn't actually manage drawing to screen, but I think it's still important to call it last in the game loop
         clock.tick(30)
      
      

@@ -40,7 +40,7 @@ class GenericAnimatedSprite(pygame.sprite.Sprite):
     currentSpriteFrame = 0
     images = []
 
-    def __init__(self, images, animCycle):
+    def __init__(self, images: str, animCycle: int):
         pygame.sprite.Sprite.__init__(self)
         self.images = load_images(images)
         self.animCycle = animCycle
@@ -73,12 +73,9 @@ class GenericStaticSprite(pygame.sprite.Sprite):
 
     images = []
 
-    def __init__(self, images):
+    def __init__(self, image: str):
         pygame.sprite.Sprite.__init__(self)
-        self.images = images
-
-    def __init__(self):
-        pygame.sprite.Sprite.__init__(self)
+        self.images = load_images(image)
 
     def get_image(self):
         return self.images[0]

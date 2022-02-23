@@ -28,6 +28,21 @@ def load_images(fileName):
         return images
     else:
         print("Did not find: " + fileName)
+        
+ # Use to resize all images loaded in      
+ def resize_load_images(fileName):
+    if(os.path.exists(fileName +".png")):
+        return [pygame.transform.scale(pygame.image.load(fileName +".png").convert_alpha(),(400,400)).convert_alpha()]
+    elif(os.path.exists(fileName +"1.png")):
+        i = 1
+        images = []
+        images.append(pygame.transform.scale(pygame.image.load(fileName +"1.png").convert_alpha(),(400,400)).convert_alpha())
+        while(os.path.exists(fileName + str(i + 1) +".png")):
+            images.append(pygame.transform.scale(pygame.image.load(fileName + str(i + 1) + ".png").convert_alpha(),(400,400)).convert_alpha())
+            i += 1
+        return images
+    else:
+        print("Did not find: " + fileName)
 
 # Use instantiations of this class for sprites that don't do much besides moving around.
 # IF YOU WANT A SPRITE WITH MORE FUNCTIONALITY STORED IN IT: create a subclass of this sprite and incorperate that functionality there
@@ -51,6 +66,42 @@ class GenericAnimatedSprite(pygame.sprite.Sprite):
     def __init__(self, images: str, animCycle: int):
         pygame.sprite.Sprite.__init__(self)
         self.images = load_images(images)
+        self.animCycle = animCycle
+
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+
+    def update(self):
+        if self.animActive:
+            self.gameFrameCounter += 1
+            if(self.gameFrameCounter == self.animCycle):
+                self.currentSpriteFrame += 1
+                self.gameFrameCounter = 0
+                if(self.currentSpriteFrame == len(self.images)):
+                    self.currentSpriteFrame = 0
+    
+    def switch_to_frame(self, frame):
+        if(frame<len(self.images) and frame > -1):
+            self.currentSpriteFrame = frame
+            self.gameFrameCounter = 0
+        else:
+            print("Frame out of bounds")
+
+    def get_image(self):
+        return self.images[self.currentSpriteFrame]
+
+#Used with resize_load_images function to animate resized sprites
+class GenericResizedAnimatedSprite(pygame.sprite.Sprite):
+
+    animCycle = 15
+    animActive = True
+    gameFrameCounter = 0
+    currentSpriteFrame = 0
+    images = []
+
+    def __init__(self, images, animCycle):
+        pygame.sprite.Sprite.__init__(self)
+        self.images = resize_load_images(images)
         self.animCycle = animCycle
 
     def __init__(self):
@@ -165,3 +216,18 @@ class Mummy(UnitSprite):
     def __init__(self):
         super().__init__(10, 2, 3)
         self.images = load_images("mummy")
+        
+ class Earth(GenericResizedAnimatedSprite):
+
+    def __init__(self):
+        self.images = resize_load_images("Earth")
+
+class Lightning(GenericResizedAnimatedSprite):
+
+    def __init__(self):
+        self.images = resize_load_images("lightning")
+
+class Cliff(GenericResizedAnimatedSprite):
+
+    def __init__(self):
+        self.images = resize_load_images("cliff")

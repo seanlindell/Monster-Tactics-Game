@@ -30,57 +30,52 @@ class Game():
         earth = sm.Earth()
         lightning = sm.Lightning()
         cliff = sm.Cliff()
+        rad = sm.Rad()
+        hooded = sm.Hooded()
         while self.scene:
             while self.cut == 1:
-                self.animate(earth)
-                self.cutscene(["THE YEAR IS 20XX AND THE EARTH IS STILL STANDING"])
+                self.cutscene(["THE YEAR IS 20XX AND THE EARTH IS STILL STANDING"], sprite = earth)
                 self.cutscene_choice()
             self.break_cutscene()
             while self.cut == 2:
-                self.cutscene(["BUT THIS STORY ISN'T ABOUT EARTH...", "AT LEAST NOT THE EARTH YOU KNOW"])
+                self.cutscene(["BUT THIS STORY ISN'T ABOUT EARTH...", "AT LEAST NOT THE EARTH YOU KNOW"], sprite = None)
                 self.cutscene_choice()
             self.break_cutscene()
             while self.cut == 3:
-                self.cutscene(["EARTH-235 LIES IN THE WAKE OF A HORRIFIC WAVE OF RADIATION"])
+                self.cutscene(["EARTH-235 LIES IN THE WAKE OF A HORRIFIC WAVE OF RADIATION"], sprite = rad)
                 self.cutscene_choice()
             self.break_cutscene()
             while self.cut == 4:
-                self.cutscene(["ALL KINDS OF MONSTERS POPULATE THIS WASTELAND...", "VYING FOR POWER ON A DEVASTATED PLANET"])
+                self.cutscene(["ALL KINDS OF MONSTERS POPULATE THIS WASTELAND...", "VYING FOR POWER ON A DEVASTATED PLANET"], sprite = None)
                 self.cutscene_choice()
             self.break_cutscene()
             while self.cut == 5:
-                self.cutscene(["WITH HOPES OF RESTORING ORDER, YOU SET OUT TOWARDS THE BATTLEFIELD"])
+                self.cutscene(["WITH HOPES OF RESTORING ORDER, YOU SET OUT TOWARDS THE BATTLEFIELD"], sprite = hooded)
                 self.cutscene_choice()
             self.break_cutscene()
             while self.cut == 6:
-                self.animate(cliff)
-                self.cutscene(["LEAD YOUR TROOPS AND PUT AN END TO THIS MONSTER MASH!"])
+                self.cutscene(["LEAD YOUR TROOPS AND PUT AN END TO THIS MONSTER MASH!"], sprite = cliff)
                 self.cutscene_choice()
             while self.cut == 7:
-                self.animate(lightning)
-                for event in pygame.event.get():
-                    if event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_RETURN:
-                            self.cut += 1
+                self.cutscene(["LEAD YOUR TROOPS AND PUT AN END TO THIS MONSTER MASH!"], sprite = lightning)
+                self.cutscene_choice()
             if self.cut > 7:
                 self.break_cutscene()
                 self.scene = False
                 self.playing = True
-    
-    def animate (self, sprite):
-        self.display.fill(self.BLACK)
-        self.window.blit(sprite.get_image(), (420,150))
-        sprite.update()
-        pygame.display.flip()
 
-    def cutscene(self, text):
+    def cutscene(self, text, sprite = None):
         self.display.fill(self.BLACK)
         if len(text) > 1:
             self.draw_text(text[0], 30, self.DISPLAY_W/2, self.DISPLAY_H/2)
             self.draw_text(text[1], 30, self.DISPLAY_W/1.9, self.DISPLAY_H/1.7)
         else:
             self.draw_text(text[0], 30, self.DISPLAY_W/2, self.DISPLAY_H/1.2)
-        self.window.blit(self.display, (0,0))
+        if sprite != None:
+            self.window.blits([(self.display, (0,0)), (sprite.get_image(), (420,150))])
+            sprite.update()
+        else:
+            self.window.blit(self.display, (0,0))
         pygame.display.flip()
         self.reset_keys()
     
@@ -104,6 +99,8 @@ class Game():
     def game_loop(self):
         if self.playing:
             main()
+        while self.playing:
+            self.check_events()
             
 
     def check_events(self):

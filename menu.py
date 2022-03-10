@@ -3,7 +3,7 @@ from pygame import mixer
 
 def play_music ():
     mixer.init()
-    song = "newbossthingmaybe.mp3"
+    song = "music_battle.mp3"
     mixer.music.load(song)
     mixer.music.play()
     mixer.music.set_volume(0.3)

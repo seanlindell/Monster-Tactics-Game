@@ -148,6 +148,13 @@ def main():
     clock = pygame.time.Clock()
     screen = pygame.display.set_mode((1280,815))
 
+    #Stop menu music and start battle music
+    song = "music_battle.mp3"
+    pygame.mixer.music.stop()
+    pygame.mixer.music.load(song)
+    pygame.mixer.music.play()
+    pygame.mixer.music.set_volume(0.3)
+
     # Information and methods for controlling movement canceling
     unitLocationChache = (-1,-1)
     def undoMove():

@@ -349,7 +349,7 @@ def main():
                     allEnemyUnitsMoved = 0
             if allEnemyUnitsMoved:
                 setToPlayerTurn()
-
+         # This is a test
 
         # MANAGE DRAWING TO SCREEN FOR THE REST OF THE GAME LOOP
 

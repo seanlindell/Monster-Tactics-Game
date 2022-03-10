@@ -98,6 +98,8 @@ class Game():
 
     def game_loop(self):
         if self.playing:
+            self.playing = 0
+            self.running = 0
             main()
         while self.playing:
             self.check_events()

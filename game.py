@@ -23,6 +23,7 @@ class Game():
         self.main_menu = MainMenu(self)
         self.curr_menu = MainMenu(self)
         self.credits = CreditsMenu(self)
+        self.options = OptionsMenu(self)
         self.cut = 1
         self.clock = pygame.time.Clock()
 

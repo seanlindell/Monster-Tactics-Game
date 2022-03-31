@@ -100,7 +100,7 @@ def main():
     # Dropdown menu selection cursor location
     dropDownCursorValue = 0
     dropDownMenuElements = []
-    dropDownShouldAddCancle = 0
+    dropDownShouldAddCancel = 0
     def buildMenu(elementsList: list):
         elementsList.clear()
         x = cursorXPos
@@ -114,8 +114,8 @@ def main():
         elif y<11 and getUnitAt(x,y+1) != None and not getUnitAt(x,y+1).isAlly:
             elementsList.append("Attack")
         
-        if dropDownShouldAddCancle:
-            elementsList.append("Cancle")
+        if dropDownShouldAddCancel:
+            elementsList.append("Cancel")
         
         elementsList.append("Wait")
 
@@ -262,7 +262,7 @@ def main():
                         selectedTileX = -1
                         selectedTileY = -1
                         dropDownCursorValue = 0
-                        dropDownShouldAddCancle = 1
+                        dropDownShouldAddCancel = 1
                         buildMenu(dropDownMenuElements)
                         cursorMode = cm.DROPDOWN
                 elif ((selectedTileX,selectedTileY) == (cursorXPos, cursorYPos)):
@@ -270,7 +270,7 @@ def main():
                     selectedTileY = -1
                     getUnitAt(cursorXPos,cursorYPos).hasMoved = 1
                     dropDownCursorValue = 0
-                    dropDownShouldAddCancle = 0
+                    dropDownShouldAddCancel = 0
                     buildMenu(dropDownMenuElements)
                     cursorMode = cm.DROPDOWN
                 elif ((getUnitAt(cursorXPos, cursorYPos) != None) and ((getUnitAt(cursorXPos, cursorYPos).isAlly) and getUnitAt(cursorXPos, cursorYPos).hasMoved == 0)):
@@ -280,7 +280,7 @@ def main():
             elif cursorMode == cm.DROPDOWN:
                 if dropDownMenuElements[dropDownCursorValue] == "Wait":
                     cursorMode = cm.MAINBOARD
-                elif dropDownMenuElements[dropDownCursorValue] == "Cancle":
+                elif dropDownMenuElements[dropDownCursorValue] == "Cancel":
                     getUnitAt(cursorXPos,cursorYPos).hasMoved = 0
                     undoMove()
                     cursorMode = cm.MAINBOARD
@@ -391,7 +391,7 @@ def main():
             screen.blit(sm.getTextSurface(": " + str(playerUnitForStatDisplay.HP), 64), (1133,89))
             screen.blit(sm.getTextSurface(": " + str(playerUnitForStatDisplay.ATK), 64), (1133,153))
             screen.blit(sm.getTextSurface(": " + str(playerUnitForStatDisplay.MOV), 64), (1133,217))
-            #screen.blit(sm.getTextSurface(text, size), (1133, ) )
+            #screen.blit(sm.getTextSurface(playerUnitForStatDisplay.ABL, 64), (1133,250))
 
         screen.blit(enemyblockSprite, (1064,410))
         screen.blit(healthIcon.get_image(), (1069,84+390))

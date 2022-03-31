@@ -201,19 +201,19 @@ class Vampire(UnitSprite):
 
     def __init__(self):
         UnitSprite.__init__(self,5,3,4)
-        self.images = load_images("vampire")
+        self.images = load_images("vampireplayer")
 
 class Werewolf(UnitSprite):
 
     def __init__(self):
         UnitSprite.__init__(self,5,8,2)
-        self.images = load_images("werewolf")
+        self.images = load_images("werewolfplayer")
 
 class Mummy(UnitSprite):
     
     def __init__(self):
         super().__init__(10, 2, 3)
-        self.images = load_images("mummy")
+        self.images = load_images("mummyplayer")
 
 class Earth(GenericResizedAnimatedSprite):
 

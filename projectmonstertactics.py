@@ -391,7 +391,7 @@ def main():
             screen.blit(sm.getTextSurface(": " + str(playerUnitForStatDisplay.HP), 64), (1133,89))
             screen.blit(sm.getTextSurface(": " + str(playerUnitForStatDisplay.ATK), 64), (1133,153))
             screen.blit(sm.getTextSurface(": " + str(playerUnitForStatDisplay.MOV), 64), (1133,217))
-            #screen.blit(sm.getTextSurface(text, size), (1133, ) )
+            #screen.blit(sm.getTextSurface(playerUnitForStatDisplay.ABL, 64), (1133,250))
 
         screen.blit(enemyblockSprite, (1064,410))
         screen.blit(healthIcon.get_image(), (1069,84+390))

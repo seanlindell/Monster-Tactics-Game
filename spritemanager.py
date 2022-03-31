@@ -146,17 +146,19 @@ class UnitSprite(GenericAnimatedSprite):
     HP = 1
     ATK = 1
     MOV = 3
-
+    
     hasMoved = 0
     isAlly = 1
+    unitType = ""
 
-    def __init__(self, maxHP, ATK, MOV):
+    def __init__(self, maxHP, ATK, MOV, unitType):
         super().__init__()
         self.maxHP = maxHP
         self.HP = self.maxHP
         self.ATK = ATK
         self.MOV = MOV
         self.animCycle = 15
+        self.unitType = unitType
 
     def update(self):
         super().update()
@@ -167,6 +169,7 @@ class UnitSprite(GenericAnimatedSprite):
 
     def makeIntoEnemy(self):
         self.isAlly = 0
+        self.images = load_images(self.unitType)
         for x in range(2):
             self.images[x] = pygame.transform.flip(self.images[x], True, False)
 
@@ -200,19 +203,19 @@ class dropDownMenu(GenericAnimatedSprite):
 class Vampire(UnitSprite):
 
     def __init__(self):
-        UnitSprite.__init__(self,5,3,4)
+        UnitSprite.__init__(self,5,3,4, "vampire")
         self.images = load_images("vampireplayer")
 
 class Werewolf(UnitSprite):
 
     def __init__(self):
-        UnitSprite.__init__(self,5,8,2)
+        UnitSprite.__init__(self,5,8,2, "werewolf")
         self.images = load_images("werewolfplayer")
 
 class Mummy(UnitSprite):
     
     def __init__(self):
-        super().__init__(10, 2, 3)
+        super().__init__(10, 2, 3, "mummy")
         self.images = load_images("mummyplayer")
 
 class Earth(GenericResizedAnimatedSprite):

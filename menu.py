@@ -19,7 +19,8 @@ class Menu():
 
     
     def draw_cursor(self):
-        self.game.draw_text('*', 15, self.cursor_rect.x, self.cursor_rect.y)
+        cursor = pygame.transform.scale(pygame.image.load("menuarrow.png").convert_alpha(), (50,50))
+        self.game.display.blit(cursor, (self.cursor_rect.x - 50 , self.cursor_rect.y - 29))
 
     def blit_screen(self):
         self.game.window.blit(self.game.display, (0,0))
@@ -95,7 +96,8 @@ class OptionsMenu(Menu):
                 self.game.curr_menu = self.game.main_menu
                 self.run_display = False
             self.game.display.fill(self.game.BLACK)
-            self.game.draw_text('Options', 70, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 - 20)
+            self.game.draw_text('Options', 70, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 - 300)
+            self.game.draw_text('Press Enter to Return to Main Menu', 30, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 + 320)
             self.blit_screen()
 
 class CreditsMenu(Menu):
@@ -112,6 +114,7 @@ class CreditsMenu(Menu):
             self.game.display.fill(self.game.BLACK)
             self.game.draw_text('Credits', 70, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 - 20)
             self.game.draw_text('Made by OuterRim, Pepsi, and SpeedSpace', 30, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 + 40)
+            self.game.draw_text('Press Enter to Return to Main Menu', 30, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 + 320)
             self.blit_screen()
 
 

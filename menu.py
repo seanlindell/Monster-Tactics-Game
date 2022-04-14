@@ -89,25 +89,37 @@ class OptionsMenu(Menu):
         Menu.__init__(self, game)
         self.state = 'Volume'
         self.volx, self.voly = self.mid_w, self.mid_h + 20
-        self.controlsx, self.controlsy = self.mid_w, self.mid_h + 40
+        self.controlsx, self.controlsy = self.mid_w, self.mid_h + 80
         self.cursor_rect.midtop = (self.volx + self.offset, self.voly)
 
     def display_menu(self):
         self.run_display = True
         while self.run_display:
             self.game.check_events()
+            self.check_input()
             self.game.display.fill(self.game.BLACK)
-            self.game.draw_text('Options', 20, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 - 300)
-            self.game.draw_text('Volume', 15, self.volx, self.voly)
-            self.game.draw_text('Controls', 15, self.controlsx, self.controlsy)
-            self.game.draw_text('Press Enter to Return to Main Menu', 30, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 + 320)
+            self.game.draw_text('Options', 70, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 - 300)
+            self.game.draw_text('Volume', 30, self.volx, self.voly)
+            self.game.draw_text('Controls', 30, self.controlsx, self.controlsy)
+            self.game.draw_text('Press ESC to Return to Main Menu', 20, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 + 320)
             self.draw_cursor()
             self.blit_screen()
     
     def check_input(self):
-        if self.game.BACK_KEY:
-                self.game.curr_menu = self.game.main_menu
-                self.run_display = False
+        if self.game.ESC_KEY:
+            self.game.curr_menu = self.game.main_menu
+            self.run_display = False
+        elif self.game.UP_KEY or self.game.DOWN_KEY:
+            if self.state == 'Volume':
+                self.state = 'Controls'
+                self.cursor_rect.midtop = (self.controlsx + self.offset, self.controlsy)
+            elif self.state == 'Controls':
+                self.state = 'Volume'
+                self.cursor_rect.midtop = (self.volx + self.offset, self.voly)
+        elif self.game.START_KEY:
+            pass
+
+
 
 class CreditsMenu(Menu):
     def __init__(self, game):
@@ -117,13 +129,13 @@ class CreditsMenu(Menu):
         self.run_display = True
         while self.run_display:
             self.game.check_events()
-            if self.game.START_KEY or self.game.BACK_KEY:
+            if self.game.START_KEY or self.game.ESC_KEY:
                 self.game.curr_menu = self.game.main_menu
                 self.run_display = False
             self.game.display.fill(self.game.BLACK)
             self.game.draw_text('Credits', 70, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 - 20)
             self.game.draw_text('Made by OuterRim, Pepsi, and SpeedSpace', 30, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 + 40)
-            self.game.draw_text('Press Enter to Return to Main Menu', 30, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 + 320)
+            self.game.draw_text('Press ESC to Return to Main Menu', 30, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 + 320)
             self.blit_screen()
 
 

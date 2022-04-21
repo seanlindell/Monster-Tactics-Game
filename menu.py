@@ -1,5 +1,6 @@
 import pygame
 from pygame import mixer
+from pygame import mouse
 
 def play_music ():
     mixer.init()
@@ -83,6 +84,18 @@ class MainMenu(Menu):
             else:
                 self.game.curr_menu = self.game.credits
             self.run_display = False
+        if self.game.MOUSE_BUTTON:
+                x = pygame.mouse.get_pos()
+                print(x[1])
+                if 410 < x[1] < 445:
+                    self.game.scene = True
+                elif 458 < x[1] < 480:
+                    self.game.curr_menu = self.game.options
+                elif 500 < x[1] < 523:
+                    self.game.curr_menu = self.game.credits
+                self.run_display = False
+                
+                
     
 class OptionsMenu(Menu):
     def __init__(self, game):

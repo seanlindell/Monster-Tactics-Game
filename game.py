@@ -1,4 +1,5 @@
 import pygame
+from pygame import mouse
 from menu import *
 import os
 from projectmonstertactics import main
@@ -11,7 +12,7 @@ class Game():
         #inititialize game states
         self.running, self.playing, self.scene = True, False, False
         #initialize keys
-        self.UP_KEY, self.DOWN_KEY, self.START_KEY, self.BACK_KEY = False, False, False, False
+        self.UP_KEY, self.DOWN_KEY, self.START_KEY, self.BACK_KEY, self.MOUSE_BUTTON = False, False, False, False, False
         #Create the window
         self.DISPLAY_W, self.DISPLAY_H = 1280, 800
         self.display = pygame.Surface((self.DISPLAY_W, self.DISPLAY_H))
@@ -116,15 +117,17 @@ class Game():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     self.START_KEY = True
-                if event.key == pygame.K_BACKSPACE:
-                    self.BACK_KEY = True
+                if event.key == pygame.K_ESCAPE:
+                    self.ESC_KEY = True
                 if event.key == pygame.K_DOWN:
                     self.DOWN_KEY = True
                 if event.key == pygame.K_UP:
                     self.UP_KEY = True
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                    self.MOUSE_BUTTON = True
     
     def reset_keys(self):
-        self.UP_KEY, self.DOWN_KEY, self.START_KEY, self.BACK_KEY = False, False, False, False
+        self.UP_KEY, self.DOWN_KEY, self.START_KEY, self.ESC_KEY, self.MOUSE_BUTTON = False, False, False, False, False
 
     def draw_text(self, text, size, x, y):
         font = pygame.font.Font(self.font_name,size)

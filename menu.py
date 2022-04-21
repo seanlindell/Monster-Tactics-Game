@@ -20,7 +20,7 @@ class Menu():
     
     def draw_cursor(self):
         cursor = pygame.transform.scale(pygame.image.load("menuarrow.png").convert_alpha(), (50,50))
-        self.game.display.blit(cursor, (self.cursor_rect.x - 50 , self.cursor_rect.y - 29))
+        self.game.display.blit(cursor, (self.cursor_rect.x , self.cursor_rect.y+72))
 
     def blit_screen(self):
         self.game.window.blit(self.game.display, (0,0))
@@ -43,11 +43,14 @@ class MainMenu(Menu):
             self.check_input()
             self.game.display.fill(self.game.BLACK)
             title = pygame.image.load("Title.png").convert_alpha()
-            new_title = pygame.transform.scale(title, (800,800))
-            self.game.display.blit(new_title, (220,-125))
-            self.game.draw_text('Start Game', 40, self.startx, self.starty)
-            self.game.draw_text('Options', 40, self.optionsx, self.optionsy)
-            self.game.draw_text('Credits', 40, self.creditsx, self.creditsy)
+            background = pygame.image.load("backgroundtitle.png").convert_alpha()
+            new_title = pygame.transform.scale(title, (1000,500))
+            new_background = pygame.transform.scale(background, (1280,815))
+            self.game.display.blit(new_background, (0,0))
+            self.game.display.blit(new_title, (145,5))
+            self.game.draw_text('Start Game', 40, self.startx, 530)
+            self.game.draw_text('Options', 40, self.optionsx, 570)
+            self.game.draw_text('Credits', 40, self.creditsx, 610)
             self.draw_cursor()
             self.blit_screen()
 
@@ -113,7 +116,7 @@ class CreditsMenu(Menu):
                 self.run_display = False
             self.game.display.fill(self.game.BLACK)
             self.game.draw_text('Credits', 70, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 - 20)
-            self.game.draw_text('Made by OuterRim, Pepsi, and SpeedSpace', 30, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 + 40)
+            self.game.draw_text('Made by OuterRim, Pepsi, and Speedspace', 30, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 + 40)
             self.game.draw_text('Press Enter to Return to Main Menu', 30, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 + 320)
             self.blit_screen()
 

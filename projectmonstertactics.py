@@ -32,6 +32,8 @@ def ztoxy(z):
     return (z%16,z//16)
 
 def getUnitAt(x, y) -> sm.UnitSprite:
+    if (x < 0 or y < 0 or x > 15 or y > 11):
+        return None
     return gameBoard[xytoz(x,y)]
 
 def getDistanceBetween(x1,y1,x2,y2):
@@ -97,6 +99,9 @@ def main():
     cursorXPos = 0
     cursorYPos = 0
 
+    # Used to space out enemy movements, ticks down each frame enemies can move when its 0
+    enemyMovementBuffer = 0
+
     # Dropdown menu selection cursor location
     dropDownCursorValue = 0
     dropDownMenuElements = []
@@ -142,7 +147,7 @@ def main():
         attackPower = getUnitAt(attackerX, attackerY).ATK
         getUnitAt(targetX, targetY).HP -= attackPower
         if getUnitAt(targetX, targetY).HP <= 0:
-            removeUnitFromUnitLists(getUnitAt(targetX, targetY), False)
+            removeUnitFromUnitLists(getUnitAt(targetX, targetY), getUnitAt(targetX, targetY).isAlly)
             setUnitAt(targetX, targetY, None)
 
     clock = pygame.time.Clock()
@@ -150,6 +155,8 @@ def main():
 
     #Stop menu music and start battle music
     song = "music_battle.mp3"
+    if not pygame.mixer.get_init():
+        pygame.mixer.init()
     pygame.mixer.music.stop()
     pygame.mixer.music.load(song)
     pygame.mixer.music.play()
@@ -340,6 +347,83 @@ def main():
 
         if (keystate[pygame.K_6]):
             cursorMode = cm.MAINBOARD
+        
+        # Handle enemy movement
+        if enemyMovementBuffer > 0:
+            enemyMovementBuffer -= 1
+        if not isPlayerTurn and enemyMovementBuffer == 0:
+            # Get an unmoved enemy
+            movingEnemy = None
+            mes = None
+
+            for i in range(0,len(gameBoard)):
+                cs = ztoxy(i) # current square
+                if not getUnitAt(cs[0], cs[1]) == None:
+                    if not getUnitAt(cs[0], cs[1]).isAlly and not getUnitAt(cs[0], cs[1]).hasMoved:
+                        movingEnemy = getUnitAt(cs[0], cs[1])
+                        mes = cs # Moving enemy square
+                        break
+            
+            if not (movingEnemy == None):
+
+                # Find the best space for them to move to
+                possibleSquaresToMoveTo = set()
+                for i in range(0,len(gameBoard)):
+                    if getDistanceBetween(mes[0], mes[1], ztoxy(i)[0], ztoxy(i)[1]) <= movingEnemy.MOV:
+                        if getUnitAt(ztoxy(i)[0], ztoxy(i)[1]) == None:
+                            possibleSquaresToMoveTo.add(ztoxy(i))
+
+                print(possibleSquaresToMoveTo)
+
+                squareToMoveTo = (0,0)
+
+                if (movingEnemy.unitType == "werewolf"):
+                    targetSet = set()
+                    for square in possibleSquaresToMoveTo:
+                        if not getUnitAt(square[0]+1, square[1]) == None:
+                            if getUnitAt(square[0]+1, square[1]).isAlly:
+                                targetSet.add((square[0]+1, square[1]))
+                        if not getUnitAt(square[0]-1, square[1]) == None:
+                            if getUnitAt(square[0]-1, square[1]).isAlly:
+                                targetSet.add((square[0]-1, square[1]))
+                        if not getUnitAt(square[0], square[1]+1) == None:
+                            if getUnitAt(square[0], square[1]+1).isAlly:
+                                targetSet.add((square[0], square[1]+1))
+                        if not getUnitAt(square[0], square[1]-1) == None:
+                            if getUnitAt(square[0], square[1]-1).isAlly:
+                                targetSet.add((square[0], square[1]-1))
+                    lowestHPOfAllyInRange = 999
+                    squareOfBestTarget = (0,0)
+                    if len(targetSet) == 0:
+                        squareOfBestTarget = None
+                        squareToMoveTo = mes #probably change me later
+                    for square in targetSet:
+                        if getUnitAt(square[0], square[1]).HP < lowestHPOfAllyInRange:
+                            squareOfBestTarget = square
+                            lowestHPOfAllyInRange = getUnitAt(square[0], square[1]).HP
+                    if (squareOfBestTarget[0]+1, squareOfBestTarget[1]) in possibleSquaresToMoveTo:
+                        squareToMoveTo = (squareOfBestTarget[0]+1, squareOfBestTarget[1])
+                    if (squareOfBestTarget[0]-1, squareOfBestTarget[1]) in possibleSquaresToMoveTo:
+                        squareToMoveTo = (squareOfBestTarget[0]-1, squareOfBestTarget[1])
+                    if (squareOfBestTarget[0], squareOfBestTarget[1]+1) in possibleSquaresToMoveTo:
+                        squareToMoveTo = (squareOfBestTarget[0], squareOfBestTarget[1]+1)
+                    if (squareOfBestTarget[0], squareOfBestTarget[1]-1) in possibleSquaresToMoveTo:
+                        squareToMoveTo = (squareOfBestTarget[0], squareOfBestTarget[1]-1)
+                    safeMoveUnits(mes[0], mes[1], squareToMoveTo[0], squareToMoveTo[1])
+                    attackUnit(squareToMoveTo[0], squareToMoveTo[1], squareOfBestTarget[0], squareOfBestTarget[1])
+                elif (movingEnemy.unitType == "zombie"):
+                    pass
+                elif (movingEnemy.unitType == "mummy"):
+                    pass
+                else:
+                    pass
+
+                movingEnemy.hasMoved = 1
+                enemyMovementBuffer = 35
+
+            # Move them
+            # Attack an adjacent enemy if possible.
+
 
         if isPlayerTurn:
             if cursorMode == cm.MAINBOARD:
@@ -356,7 +440,6 @@ def main():
                     allEnemyUnitsMoved = 0
             if allEnemyUnitsMoved:
                 setToPlayerTurn()
-         # This is a test
 
         # MANAGE DRAWING TO SCREEN FOR THE REST OF THE GAME LOOP
 

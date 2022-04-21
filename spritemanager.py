@@ -248,4 +248,10 @@ class Hooded(GenericResizedAnimatedSprite):
         self.images = resize_load_images("hooded")
         self.animCycle = 30
 
+class MenuBox(GenericAnimatedSprite):
+
+    def __init__(self):
+        self.images = load_images("menubox")
+        self.animCycle = 30
+
         
